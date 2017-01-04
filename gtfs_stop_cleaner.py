@@ -67,10 +67,10 @@ def fit_gtfs_stops(osmfile, stopsfile, distance_threshold=200.0):
 				row['stop_lat'] = lat
 				row['stop_lon'] = lon
 			else:
-				print >>sys.stderr, "Huge error %f for stop %s"%(error, row['stop_code'])
+				print >>sys.stderr, "Huge error;%s;[%s, %s];[%s, %s];"%(row['stop_code'], row['stop_lon'], row['stop_lat'], lon, lat)
 		else:
 			if row['stop_code']:
-				print >>sys.stderr, "No OSM stop for %s"%(row['stop_code'])
+				print >>sys.stderr, "No OSM stop;%s;[%s, %s];"%(row['stop_code'], row['stop_lon'], row['stop_lat'])
 		writer.writerow(row.values())
 	sys.stdout.flush()
 	#plt.hist(filter(lambda x: x < distance_threshold, position_errors), bins=50)
