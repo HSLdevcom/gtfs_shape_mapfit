@@ -32,11 +32,11 @@ def generate_geojson(stop_file, shapefit_file, shape_file_original, shape_file_f
 				score = row[2].split(':')[1].lstrip()
 				score_limit = row[3].split(': ')[1].lstrip()
 				properties_hsl = '{"ref": "%s", "errorType": "%s", "source": "HSL", "score" : "%s", "scoreLimit" : "%s"}'%(route_id, error_type, score, score_limit)
-				properties_osm = '{"ref": "%s", "errorType": "%s", "source": "OSM", "score" : "%s", "scoreLimit" : "%s"}'%(route_id, error_type, score, score_limit)
+				properties_osm = '{"ref": "%s", "errorType": "%s", "source": "HSL Fitted", "score" : "%s", "scoreLimit" : "%s"}'%(route_id, error_type, score, score_limit)
 			else:
 				outliers = row[2].split(':')[1]
 				properties_hsl = '{"ref": "%s", "errorType": "%s", "source": "HSL", "outliers" : "%s"}'%(route_id, error_type, outliers)
-				properties_osm = '{"ref": "%s", "errorType": "%s", "source": "OSM", "outliers" : "%s"}'%(route_id, error_type, outliers)
+				properties_osm = '{"ref": "%s", "errorType": "%s", "source": "HSL Fitted", "outliers" : "%s"}'%(route_id, error_type, outliers)
 			feature_hsl = '{"type": "Feature", "geometry": {"type": "LineString", "coordinates": %s}, "properties": %s}'%(coordinates_hsl, properties_hsl)
 			feature_osm = '{"type": "Feature", "geometry": {"type": "LineString", "coordinates": %s}, "properties": %s}'%(coordinates_osm, properties_osm)
 			shape_features.append(feature_hsl)
