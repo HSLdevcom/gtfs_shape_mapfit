@@ -43,7 +43,7 @@ def generate_geojson(stop_file, shapefit_file, shape_file_original, shape_file_f
 			shape_features.append(feature_osm)
 	all_features = stop_features + shape_features
 	feature_collection = '{"type": "FeatureCollection", "features": [%s]}'%(", ".join([feature.decode('utf8') for feature in all_features]))
-	sys.stdout.write(feature_collection);
+	sys.stdout.write(feature_collection)
 
 def find_coordinates(file, route_id):
 	coordinates = []
