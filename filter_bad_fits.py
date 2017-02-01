@@ -53,12 +53,12 @@ def filter_bad_fits(statsfile, fitted_shapes, orig_shapes, criteria_quantiles=2.
 				writer(shape_id, fitted[shape_id])
 				continue
 			if row[2] > 0:
-				print >>sys.stderr, "%i outliers in %s, using the original"%(row[2], row[0])
+				print >>sys.stderr, "Outliers found, using original;Route ID: %s;Outliers: %i;"%(row[0], row[2])
 
 			lik = row[1]
 			score = math.sqrt(-lik - minscore)
 			if score > score_limit:
-				print >>sys.stderr, "Probably bad fit for %s (%f, limit %f), using the original"%(row[0], score, score_limit)
+				print >>sys.stderr, "Probably bad fit, using original;Route ID: %s;Score: %f;Score limit: %f;"%(row[0], score, score_limit)
 				writer(shape_id, orig[shape_id])
 
 			else:
