@@ -33,10 +33,16 @@ def read_osm_stops(osmfile):
 		if (node[1].get('highway') != 'bus_stop' and
                     node[1].get('railway') != 'tram_stop'):
                     return
-		if 'ref' not in node[1]: return
-		ref = node[1]['ref']
-		if not ref: return
-		stop_coords[ref].append(node[2])
+		if 'ref' not in node[1] and 'ref:findr' not in node[1]: return
+		if 'ref' in node[1]:
+			ref = node[1]['ref']		
+			if not ref: return
+			stop_coords[ref].append((node[2],('ref',node[1]['ref'])))
+
+		if 'ref:findr' in node[1]:
+			ref = node[1]['ref:findr']
+			if not ref: return
+			stop_coords[ref].append(node[2],('ref:findr',(node[1]['ref:findr'])))
 
 	def handle_nodes(nodes):
 		for node in nodes:
@@ -55,21 +61,23 @@ def fit_gtfs_stops(osmfile, stopsfile, distance_threshold=200.0):
 	for stop in reader:
 		row = OrderedDict(zip(names, stop))
 		candidates = []
-		for candidate in osmstops[row['stop_code']]:
-			lat, lon = candidate[::-1]
+		for candidate in osmstops[row['stop_code']] + osmstops[row['stop_id']]:
+
+			lat, lon = candidate[0][::-1]
+			candid = candidate[1]
 			distance = haversine((lat, lon), (float(row['stop_lat']), float(row['stop_lon'])))
-			candidates.append((distance, (lat, lon)))
+			candidates.append((distance, (lat, lon),candid))
 		if len(candidates) > 0:
-			error, (lat, lon) = min(candidates)
+			error, (lat, lon), candid = min(candidates)
 			position_errors.append(error)
 			if error < distance_threshold:
 				row['stop_lat'] = lat
 				row['stop_lon'] = lon
 			else:
-				print >>sys.stderr, "Huge error;Stop ID: %s;[%s, %s];[%s, %s];"%(row['stop_code'], row['stop_lon'], row['stop_lat'], lon, lat)
+				print >>sys.stderr, "Huge error;Stop ID: %s / %s;[%s, %s];[%s, %s];%.1f;%s"%(row['stop_id'],row['stop_code'], row['stop_lon'], row['stop_lat'], lon, lat,error,candid)
 		else:
-			if row['stop_code']:
-				print >>sys.stderr, "No OSM stop;Stop ID: %s;[%s, %s];"%(row['stop_code'], row['stop_lon'], row['stop_lat'])
+			if row['stop_code'] or row['stop_id']:
+				print >>sys.stderr, "No OSM stop;Stop ID: %s / %s;[%s, %s]"%(row['stop_id'],row['stop_code'], row['stop_lon'], row['stop_lat'])
 		writer.writerow(row.values())
 	sys.stdout.flush()
 	#plt.hist(filter(lambda x: x < distance_threshold, position_errors), bins=50)
