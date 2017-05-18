@@ -37,12 +37,12 @@ def read_osm_stops(osmfile):
 		if 'ref' in node[1]:
 			ref = node[1]['ref']		
 			if not ref: return
-			stop_coords[ref].append((node[2],('ref',node[1]['ref'])))
+			stop_coords[('code',ref)].append((node[2],('ref',node[1]['ref'])))
 
 		if 'ref:findr' in node[1]:
-			ref = node[1]['ref:findr']
-			if not ref: return
-			stop_coords[ref].append(node[2],('ref:findr',(node[1]['ref:findr'])))
+			reffindr = node[1]['ref:findr']
+			if not reffindr: return
+			stop_coords[('id',reffindr)].append((node[2],('ref:findr',node[1]['ref:findr'])))
 
 	def handle_nodes(nodes):
 		for node in nodes:
@@ -61,7 +61,7 @@ def fit_gtfs_stops(osmfile, stopsfile, distance_threshold=200.0):
 	for stop in reader:
 		row = OrderedDict(zip(names, stop))
 		candidates = []
-		for candidate in osmstops[row['stop_code']] + osmstops[row['stop_id']]:
+		for candidate in osmstops[('code',row['stop_code'])] + osmstops[('id',row['stop_id'])]:
 
 			lat, lon = candidate[0][::-1]
 			candid = candidate[1]
