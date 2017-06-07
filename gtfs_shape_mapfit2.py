@@ -17,10 +17,10 @@ ROUTE_TYPE_FILTERS = {
 	'3': "BUSWAY_FILTER",
 	'2': "TRAIN_FILTER",
 	'109': "TRAIN_FILTER", # Non-standard type for Helsinki's data
-        '700': "BUSWAY_FILTER",
-        '701': "BUSWAY_FILTER",
-        '702': "BUSWAY_FILTER",
-        '704': "BUSWAY_FILTER",
+	'700': "BUSWAY_FILTER",
+	'701': "BUSWAY_FILTER",
+	'702': "BUSWAY_FILTER",
+	'704': "BUSWAY_FILTER",
 }
 
 from threading import Lock, RLock, Thread
