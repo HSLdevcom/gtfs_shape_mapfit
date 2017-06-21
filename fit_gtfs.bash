@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 MAP_FILE=$1
 PROJECTION=$2
