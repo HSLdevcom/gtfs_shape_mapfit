@@ -13,10 +13,13 @@ class ShapeError(Exception): pass
 
 ROUTE_TYPE_FILTERS = {
 	'0': "TRAM_FILTER",
-	'1': "SUBWAY_FILTER",
 	'3': "BUSWAY_FILTER",
 	'2': "TRAIN_FILTER",
 	'109': "TRAIN_FILTER", # Non-standard type for Helsinki's data
+	'700': "BUSWAY_FILTER",
+	'701': "BUSWAY_FILTER",
+	'702': "BUSWAY_FILTER",
+	'704': "BUSWAY_FILTER",
 }
 
 from threading import Lock, RLock, Thread
