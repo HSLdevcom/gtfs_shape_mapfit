@@ -29,7 +29,7 @@ def stderr(*args):
 def jore_shape_mapfit(
 		map_file,
 		projection,
-		connection_string
+		connection_string,
 		graphql_endpoint="http://kartat.hsl.fi/jore/graphql",
 		search_region=100.0
 	):
@@ -145,12 +145,12 @@ def jore_shape_mapfit(
 			"INSERT INTO jore.geometry(%s, %s, %s, %s, %s::jore.mode, ST_GEOMETRYFROMTEXT(%s, 4326), %s, %s)",
 			(
 				shape_props['route_id'],
-				shape_props['direction']
-				shape_props['date_begin']
-				shape_props['date_end']
-				shape_props['mode']
+				shape_props['direction'],
+				shape_props['date_begin'],
+				shape_props['date_end'],
+				shape_props['mode'],
 				"LINESTRING(" + ",".join([str(lon) + " " + str(lat) for (lat, lon) in shape_coords]) + ")",
-				n_outliers
+				n_outliers,
 				minlik
 			)
 		)
