@@ -50,13 +50,13 @@ def jore_shape_mapfit(
 	conn = psycopg2.connect(connection_string)
 	cur = conn.cursor()
 	cur.execute("""CREATE TABLE jore.geometry (
-		route_id   character varying(6) NOT NULL
-		direction  character varying(1) NOT NULL
-		date_begin date NOT NULL
-		date_end   date NOT NULL
-		mode       jore.mode
-		geometry   geometry(LineString,4326)
-		outliers   integer
+		route_id   character varying(6) NOT NULL,
+		direction  character varying(1) NOT NULL,
+		date_begin date NOT NULL,
+		date_end   date NOT NULL,
+		mode       jore.mode,
+		geometry   geometry(LineString,4326),
+		outliers   integer,
 		min_likelihood real
 		)""")
 
