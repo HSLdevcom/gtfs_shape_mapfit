@@ -1,4 +1,4 @@
 [submodule "pymapmatch"]
 	path = pymapmatch
-	url = https://github.com/tru-hy/pymapmatch.git
-	branch = fastmapmatch
+	url = https://github.com/HSLdevcom/pymapmatch.git
+	branch = construction
