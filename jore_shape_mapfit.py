@@ -6,6 +6,7 @@ import datetime
 import json
 import urllib2
 import contextlib
+import psycopg2
 
 import pymapmatch.osmmapmatch as omm
 from collections import defaultdict
@@ -28,14 +29,10 @@ def stderr(*args):
 def jore_shape_mapfit(
 		map_file,
 		projection,
+		connection_string
 		graphql_endpoint="http://kartat.hsl.fi/jore/graphql",
-		whitelist=None,
-		search_region=100.0,
-		node_ids=False
+		search_region=100.0
 	):
-
-	if whitelist:
-		whitelist = set(whitelist.split(','))
 
 	req = urllib2.Request(
 		graphql_endpoint,
@@ -49,6 +46,19 @@ def jore_shape_mapfit(
 		shapes = json.load(shape_stream).get("data").get("pointNetworkAsGeojson")
 
 	print "opened file"
+
+	conn = psycopg2.connect(connection_string)
+	cur = conn.cursor()
+	cur.execute("""CREATE TABLE jore.geometry (
+		route_id   character varying(6) NOT NULL
+		direction  character varying(1) NOT NULL
+		date_begin date NOT NULL
+		date_end   date NOT NULL
+		mode       jore.mode
+		geometry   geometry(LineString,4326)
+		outliers   integer
+		min_likelihood real
+		)""")
 
 	projection = omm.CoordinateProjector(projection)
 
@@ -112,15 +122,9 @@ def jore_shape_mapfit(
 		return shape["properties"], fitted, fitted_nodes, states, matcher, type_filter
 
 	shapes = list(shapes["features"])
-	if whitelist:
-		shapes = [s for s in shapes if s[0] in whitelist]
 
 	start_time = time.time()
 	results = (do_fit(s) for s in shapes)
-	output = {'type': "FeatureCollection", 'features': []}
-	extra_cols = []
-	if node_ids:
-		extra_cols.append('node_id')
 	for i, (shape_props, shape_coords, ids, states, matcher, type_filter) in enumerate(results):
 		shape_id = shape_props['route_id']
 		likelihoods = [s.measurement_likelihood+s.transition_likelihood for s in states]
@@ -137,14 +141,23 @@ def jore_shape_mapfit(
 		logrow = shape_id, minlik, n_outliers, type_filter, status
 		stderr(';'.join(map(str, logrow)))
 
-		extra_cols = []
-		if node_ids:
-			ids = [p if p > 0 else "" for p in ids]
-			extra_cols.append(ids)
-		output['features'].append({'type': 'Feature', 'properties': shape_props, 'geometry': {'type': 'LineString', 'coordinates': [[lon, lat] for (lat, lon) in shape_coords]}})
+		cur.execute(
+			"INSERT INTO jore.geometry(%s, %s, %s, %s, %s::jore.mode, ST_GEOMETRYFROMTEXT(%s, 4326), %s, %s)",
+			(
+				shape_props['route_id'],
+				shape_props['direction']
+				shape_props['date_begin']
+				shape_props['date_end']
+				shape_props['mode']
+				"LINESTRING(" + ",".join([str(lon) + " " + str(lat) for (lat, lon) in shape_coords]) + ")",
+				n_outliers
+				minlik
+			)
+		)
 
-	with open('out.json', 'w') as outfile:
-		json.dump(output, outfile)
+	conn.commit()
+	cur.close()
+	conn.close()
 
 if __name__ == '__main__':
 	import argh
