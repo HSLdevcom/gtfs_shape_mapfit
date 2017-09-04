@@ -4,6 +4,8 @@ import sys
 import time
 import datetime
 import json
+import urllib2
+import contextlib
 
 import pymapmatch.osmmapmatch as omm
 from collections import defaultdict
@@ -23,13 +25,28 @@ def stderr(*args):
 	with stderr_lock:
 		print >>sys.stderr, ' '.join(args)
 
-def jore_shape_mapfit(map_file, projection, shape_json, whitelist=None, search_region=100.0, node_ids=False):
+def jore_shape_mapfit(
+		map_file,
+		projection,
+		graphql_endpoint="http://kartat.hsl.fi/jore/graphql",
+		whitelist=None,
+		search_region=100.0,
+		node_ids=False
+	):
 
 	if whitelist:
 		whitelist = set(whitelist.split(','))
 
-	with open(shape_json) as shape_file:
-		shapes = json.load(shape_file).get("data").get("networkByDateAsGeojson")
+	req = urllib2.Request(
+		graphql_endpoint,
+		'{"query":"query networkQuery { pointNetworkAsGeojson }","variables":null,"operationName":"networkQuery"}',
+		{"Content-Type": "application/json", "Accept": "application/json"}
+	)
+
+	#urllib2.install_opener(urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1)))
+
+	with contextlib.closing(urllib2.urlopen(req)) as shape_stream:
+		shapes = json.load(shape_stream).get("data").get("pointNetworkAsGeojson")
 
 	print "opened file"
 
@@ -69,7 +86,7 @@ def jore_shape_mapfit(map_file, projection, shape_json, whitelist=None, search_r
 		route_type = shape["properties"]["mode"]
 		type_filter = ROUTE_TYPE_FILTERS.get(route_type)
 		graph = graphs[type_filter]
-		
+
 		if graph is None:
 			return shape["properties"], shape_coords, [], [], None, None
 
@@ -125,11 +142,10 @@ def jore_shape_mapfit(map_file, projection, shape_json, whitelist=None, search_r
 			ids = [p if p > 0 else "" for p in ids]
 			extra_cols.append(ids)
 		output['features'].append({'type': 'Feature', 'properties': shape_props, 'geometry': {'type': 'LineString', 'coordinates': [[lon, lat] for (lat, lon) in shape_coords]}})
-	
+
 	with open('out.json', 'w') as outfile:
 		json.dump(output, outfile)
 
 if __name__ == '__main__':
 	import argh
 	argh.dispatch_command(jore_shape_mapfit)
-
