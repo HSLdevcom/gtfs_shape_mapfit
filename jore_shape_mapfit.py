@@ -49,6 +49,7 @@ def jore_shape_mapfit(
 
 	conn = psycopg2.connect(connection_string)
 	cur = conn.cursor()
+	cur.execute("DROP TABLE IF EXISTS jore.geometry")
 	cur.execute("""CREATE TABLE jore.geometry (
 		route_id   character varying(6) NOT NULL,
 		direction  character varying(1) NOT NULL,
@@ -142,7 +143,7 @@ def jore_shape_mapfit(
 		stderr(';'.join(map(str, logrow)))
 
 		cur.execute(
-			"INSERT INTO jore.geometry(%s, %s, %s, %s, %s::jore.mode, ST_GEOMETRYFROMTEXT(%s, 4326), %s, %s)",
+			"INSERT INTO jore.geometry VALUES (%s, %s, %s, %s, %s::jore.mode, ST_GEOMETRYFROMTEXT(%s, 4326), %s, %s)",
 			(
 				shape_props['route_id'],
 				shape_props['direction'],
